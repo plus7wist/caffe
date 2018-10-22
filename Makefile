@@ -1,5 +1,6 @@
 PROJECT := caffe
 
+# 引入配置文件
 CONFIG_FILE := Makefile.config
 # Explicitly check for the config file, otherwise make -k will proceed anyway.
 ifeq ($(wildcard $(CONFIG_FILE)),)
@@ -7,6 +8,7 @@ $(error $(CONFIG_FILE) not found. See $(CONFIG_FILE).example.)
 endif
 include $(CONFIG_FILE)
 
+# release 和 debug 的构建路径
 BUILD_DIR_LINK := $(BUILD_DIR)
 ifeq ($(RELEASE_BUILD_DIR),)
 	RELEASE_BUILD_DIR := .$(BUILD_DIR)_release
@@ -15,6 +17,7 @@ ifeq ($(DEBUG_BUILD_DIR),)
 	DEBUG_BUILD_DIR := .$(BUILD_DIR)_debug
 endif
 
+# 用 DEBUG 开关控制是否编译 debug 版本
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
 	BUILD_DIR := $(DEBUG_BUILD_DIR)
@@ -44,29 +47,38 @@ COMMON_FLAGS += -DCAFFE_VERSION=$(DYNAMIC_VERSION_MAJOR).$(DYNAMIC_VERSION_MINOR
 ##############################
 # Get all source files
 ##############################
+
 # CXX_SRCS are the source files excluding the test ones.
 CXX_SRCS := $(shell find src/$(PROJECT) ! -name "test_*.cpp" -name "*.cpp")
+
 # CU_SRCS are the cuda source files
 CU_SRCS := $(shell find src/$(PROJECT) ! -name "test_*.cu" -name "*.cu")
+
 # TEST_SRCS are the test source files
 TEST_MAIN_SRC := src/$(PROJECT)/test/test_caffe_main.cpp
 TEST_SRCS := $(shell find src/$(PROJECT) -name "test_*.cpp")
 TEST_SRCS := $(filter-out $(TEST_MAIN_SRC), $(TEST_SRCS))
 TEST_CU_SRCS := $(shell find src/$(PROJECT) -name "test_*.cu")
 GTEST_SRC := src/gtest/gtest-all.cpp
+
 # TOOL_SRCS are the source files for the tool binaries
 TOOL_SRCS := $(shell find tools -name "*.cpp")
+
 # EXAMPLE_SRCS are the source files for the example binaries
 EXAMPLE_SRCS := $(shell find examples -name "*.cpp")
+
 # BUILD_INCLUDE_DIR contains any generated header files we want to include.
 BUILD_INCLUDE_DIR := $(BUILD_DIR)/src
+
 # PROTO_SRCS are the protocol buffer definitions
 PROTO_SRC_DIR := src/$(PROJECT)/proto
 PROTO_SRCS := $(wildcard $(PROTO_SRC_DIR)/*.proto)
+
 # PROTO_BUILD_DIR will contain the .cc and obj files generated from
 # PROTO_SRCS; PROTO_BUILD_INCLUDE_DIR will contain the .h header files
 PROTO_BUILD_DIR := $(BUILD_DIR)/$(PROTO_SRC_DIR)
 PROTO_BUILD_INCLUDE_DIR := $(BUILD_INCLUDE_DIR)/$(PROJECT)/proto
+
 # NONGEN_CXX_SRCS includes all source/header files except those generated
 # automatically (e.g., by proto).
 NONGEN_CXX_SRCS := $(shell find \
@@ -77,6 +89,7 @@ NONGEN_CXX_SRCS := $(shell find \
 	examples \
 	tools \
 	-name "*.cpp" -or -name "*.hpp" -or -name "*.cu" -or -name "*.cuh")
+
 LINT_SCRIPT := scripts/cpp_lint.py
 LINT_OUTPUT_DIR := $(BUILD_DIR)/.lint
 LINT_EXT := lint.txt
